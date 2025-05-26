@@ -4,6 +4,7 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
+use App\Logging\LokiHandler; 
 
 return [
 
@@ -92,6 +93,22 @@ return [
                 'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
+        ],
+
+        'loki' => [
+            'driver' => 'custom',
+            'via' => function (array $config) {
+                return new \Monolog\Logger('loki', [
+                    new LokiHandler($config),
+                ]);
+            },
+            'level' => env('LOG_LOKI_LEVEL', 'debug'),
+            'url' => env('LOKI_URL', 'http://loki:3100'), // This URL is passed to the handler config
+            'labels' => [
+                'application' => env('APP_NAME', 'laravel'),
+                'env' => env('APP_ENV', 'local'),
+                'source' => 'laravel-app', // A good general label
+            ],
         ],
 
         'stderr' => [
