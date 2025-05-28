@@ -78,6 +78,38 @@
   }
 }
 
+@layer components {
+  .btn {
+    @apply px-4 py-2 font-semibold text-white rounded-lg shadow-md
+           focus:outline-none focus:ring-2 
+           cursor-pointer; /* Base styles for all buttons */
+  }
+
+  .btn-primary {
+    /* Uses your custom --color-primary variables */
+    @apply bg-(--color-primary) text-(--color-primary-foreground)
+           hover:bg-(--color-primary)/90 focus:ring-(--color-primary)/50;
+  }
+
+  .btn-destructive {
+    /* Uses your custom --color-destructive variables */
+    @apply bg-(--color-destructive) text-(--color-destructive-foreground)
+           hover:bg-(--color-destructive)/90 focus:ring-(--color-destructive)/50;
+  }
+
+  /* You might also want other common variants */
+  .btn-secondary {
+    @apply bg-(--color-secondary) text-(--color-secondary-foreground)
+           hover:bg-(--color-secondary)/90 focus:ring-(--color-secondary)/50;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-(--color-foreground) border border-(--color-border)
+           hover:bg-(--color-accent) hover:text-(--color-accent-foreground)
+           focus:ring-(--color-input)/50; /* Adjust ring color as needed */
+  }
+}
+
 @layer utilities {
   body,
   html {
