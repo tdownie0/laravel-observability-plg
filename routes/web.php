@@ -24,11 +24,13 @@ Route::get('/throw-error', function () {
             'trace' => $e->getTraceAsString(),
         ]);
     }
+
     return 'Error logged. Check Loki/Grafana!';
 });
 
 Route::get('/log-info', function () {
     Log::info('This is an informational message.');
+
     return 'Info message logged. Check Loki/Grafana!';
 });
 
