@@ -1,6 +1,6 @@
-import { router, usePage } from '@inertiajs/vue3'; 
+import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { App, nextTick } from 'vue';
+import { App } from 'vue';
 
 declare global {
     interface Window {
@@ -38,13 +38,13 @@ export const pageTrackerPlugin = {
         let previousUrl: string | null = null; // Store the previous URL
 
         router.on('before', (event) => {
-            if (event.detail.visit.url) { 
-                previousUrl = window.location.href; 
+            if (event.detail.visit.url) {
+                previousUrl = window.location.href;
             }
         });
 
-        router.on('navigate', () => { 
-            setTimeout(() => { 
+        router.on('navigate', () => {
+            setTimeout(() => {
                 const page = usePage<CustomPageProps>();
                 const props = page.props;
                 const userId: number | null = props.auth?.user ? props.auth.user.id : null;
@@ -53,18 +53,20 @@ export const pageTrackerPlugin = {
 
                 const currentDocumentTitle = document.title;
 
-                axios.post(apiEndpoint, {
-                    user_id: userId,
-                    session_id: sessionId,
-                    page_url: url,
-                    page_title: currentDocumentTitle,
-                    referrer: referrer,
-                    browser_info: navigator.userAgent,
-                    screen_resolution: `${window.screen.width}x${window.screen.height}`,
-                }).catch(error => {
-                    console.error('Error tracking page visit:', error);
-                });
-            }, 10); 
+                axios
+                    .post(apiEndpoint, {
+                        user_id: userId,
+                        session_id: sessionId,
+                        page_url: url,
+                        page_title: currentDocumentTitle,
+                        referrer: referrer,
+                        browser_info: navigator.userAgent,
+                        screen_resolution: `${window.screen.width}x${window.screen.height}`,
+                    })
+                    .catch((error) => {
+                        console.error('Error tracking page visit:', error);
+                    });
+            }, 10);
         });
-    }
+    },
 };

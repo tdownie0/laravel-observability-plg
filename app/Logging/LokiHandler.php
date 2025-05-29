@@ -94,6 +94,6 @@ class LokiHandler extends AbstractProcessingHandler
     // This allows us to control the full message string.
     protected function getDefaultFormatter(): \Monolog\Formatter\FormatterInterface
     {
-        return new \Monolog\Formatter\JsonFormatter();
+        return new \Monolog\Formatter\JsonFormatter;
     }
 }
