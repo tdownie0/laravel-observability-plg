@@ -23,3 +23,12 @@ Route::post('/log-client-error', function (Request $request) {
 
     return response()->json(['status' => 'success'], 200);
 });
+
+Route::post('/track-page-visit', function (Request $request) {
+    Log::channel('loki')->info('Page Visit', array_merge($request->all(), [
+        'event' => 'page_visit', 
+        'ip_address' => $request->ip(),
+    ]));
+
+    return response()->json(['status' => 'success']);
+});

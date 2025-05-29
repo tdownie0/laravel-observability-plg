@@ -22,21 +22,34 @@ class LokiHandler extends AbstractProcessingHandler
         $this->url = ($config['url'] ?? 'http://loki:3100').'/loki/api/v1/push';
         $this->defaultLabels = $config['labels'] ?? [];
 
-        $this->client = new Client;
+        $this->client = new Client([
+            'timeout' => 5,
+            'connect_timeout' => 2,
+        ]);
     }
 
     protected function write(LogRecord $record): void
     {
-        error_log('LokiHandler: write method called for level '.$record->level->getName());
-        error_log('LokiHandler: Raw message: '.$record->message);
+        // error_log('LokiHandler: write method called for level '.$record->level->getName());
+        // error_log('LokiHandler: Raw message: '.$record->message);
 
         // Labels for the log stream (low cardinality, fixed values)
         $labels = array_merge($this->defaultLabels, [
             'level' => strtolower($record->level->getName()), // Use lowercase for Loki label convention
+            'channel' => $record->channel,
         ]);
 
+        $logLineData = [
+            'message' => $record->message,
+            'datetime' => $record->datetime->format('c'), // ISO 8601 timestamp
+            'level_name' => $record->level->getName(), // Original level name
+            'channel' => $record->channel, // Monolog channel
+            // Merge context and extra for all dynamic fields
+            'context' => array_merge($record->context, $record->extra),
+        ];
+
         // Construct the log line including context
-        $logLine = $this->formatLogMessageWithContext($record);
+        $logLine = json_encode($logLineData);
 
         $nanoseconds = $record->datetime->getTimestamp() * 1_000_000_000;
 
@@ -54,8 +67,8 @@ class LokiHandler extends AbstractProcessingHandler
             ],
         ];
 
-        error_log('LokiHandler: Sending payload (truncated for log output): '.substr(json_encode($entry), 0, 500).'...');
-        error_log('LokiHandler: Full payload size: '.strlen(json_encode($entry)).' bytes');
+        // error_log('LokiHandler: Sending payload (truncated for log output): '.substr(json_encode($entry), 0, 500).'...');
+        // error_log('LokiHandler: Full payload size: '.strlen(json_encode($entry)).' bytes');
 
         try {
             $response = $this->client->post($this->url, [
@@ -65,7 +78,7 @@ class LokiHandler extends AbstractProcessingHandler
                 'json' => $entry,
             ]);
 
-            error_log('LokiHandler: Received response status: '.$response->getStatusCode());
+            // error_log('LokiHandler: Received response status: '.$response->getStatusCode());
 
         } catch (RequestException $e) {
             error_log('🚨 Loki push failed (RequestException): '.$e->getMessage());
@@ -77,47 +90,10 @@ class LokiHandler extends AbstractProcessingHandler
         }
     }
 
-    /**
-     * Formats the log message including context data.
-     */
-    protected function formatLogMessageWithContext(LogRecord $record): string
-    {
-        $message = $record->message;
-        $context = $record->context;
-
-        if (! empty($context)) {
-            // Convert context to a JSON string or a more readable format
-            // Exclude 'trace' from being used as a label, add it to the message.
-            if (isset($context['trace'])) {
-                $message .= ' | Trace: '.$context['trace'];
-                unset($context['trace']); // Remove trace from context that might be appended later
-            }
-            if (isset($context['exception_message'])) {
-                $message .= ' | Exception: '.$context['exception_message'];
-                unset($context['exception_message']);
-            }
-            if (isset($context['file'])) {
-                $message .= ' | File: '.$context['file'];
-                unset($context['file']);
-            }
-            if (isset($context['line'])) {
-                $message .= ' | Line: '.$context['line'];
-                unset($context['line']);
-            }
-
-            // Append any remaining context as JSON
-            if (! empty($context)) {
-                $message .= ' | Context: '.json_encode($context);
-            }
-        }
-
-        return $message;
-    }
-
     // Override parent's formatHandlers so it doesn't try to JSON encode again
     // This allows us to control the full message string.
     protected function getDefaultFormatter(): \Monolog\Formatter\FormatterInterface
     {
-        return new \Monolog\Formatter\LineFormatter(null, null, false, true);
+        return new \Monolog\Formatter\JsonFormatter();
     }
 }
