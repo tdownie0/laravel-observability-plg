@@ -2,6 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ComponentPublicInstance, onErrorCaptured, ref, Ref } from 'vue';
+import Button from './ui/button/Button.vue';
 
 interface AuthUser {
     id: number | null;
@@ -98,7 +99,7 @@ const resetError = (): void => {
     <div v-if="error">
         <h1>You got an error:</h1>
         <pre style="white-space: pre-wrap"><code>{{ getErrorString(error) }}</code></pre>
-        <button @click="resetError" class="btn btn-primary">Try Again</button>
+        <Button @click="resetError" class="hover:cursor-pointer">Try Again</Button>
     </div>
     <slot v-else></slot>
 </template>

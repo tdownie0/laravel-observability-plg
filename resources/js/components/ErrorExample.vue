@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Button from './ui/button/Button.vue';
+
 const causeError = (): void => {
     throw new Error('Error from button click!');
 };
@@ -6,6 +8,6 @@ const causeError = (): void => {
 
 <template>
     <div>
-        <button @click="causeError" class="btn btn-destructive">Cause an error</button>
+        <Button @click="causeError" variant="destructive" size="lg" class="hover:cursor-pointer">Cause an error</Button>
     </div>
 </template>
