@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { ColumnDef, FlexRender, SortingState, getCoreRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
+import { FlexRender, SortingState, getCoreRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
 import { ref } from 'vue';
 import { Payment, columns } from './Contacts/Columns';
 
@@ -14,11 +14,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/contacts',
     },
 ];
-
-interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
-}
 
 const data: Payment[] = [
     // Example data, replace with your actual data source
