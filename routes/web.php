@@ -12,6 +12,10 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('contacts', function () {
+    return Inertia::render('Contacts');
+})->middleware(['auth', 'verified'])->name('contacts');
+
 // New routes for testing logging
 Route::get('/throw-error', function () {
     try {
