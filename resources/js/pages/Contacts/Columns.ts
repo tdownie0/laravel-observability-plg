@@ -28,7 +28,7 @@ export const columns: ColumnDef<Payment>[] = [
                 {
                     variant: 'ghost',
                     size: 'sm',
-                    class: 'text-right flex items-center gap-2',
+                    class: 'text-right flex items-center gap-2 justify-self-end',
                     onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
                 },
                 {
