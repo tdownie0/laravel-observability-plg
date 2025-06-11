@@ -84,14 +84,14 @@ services:
     promtail:
         image: grafana/promtail:2.9.0 # Use a stable Promtail version
         volumes:
-            - ./promtail-config.yaml:/etc/promtail/config.yaml
-            # Mount the Laravel log directory
-            - ./storage/logs:/var/log/laravel
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - ./promtail-config.yaml:/etc/promtail/config.yaml:ro
         command: -config.file=/etc/promtail/config.yaml
         networks:
             - sail
         depends_on:
             - loki
+        restart: unless-stopped
     prometheus:
         image: prom/prometheus:v2.45.0 # Use a stable Prometheus version
         command: --config.file=/etc/prometheus/prometheus.yaml
