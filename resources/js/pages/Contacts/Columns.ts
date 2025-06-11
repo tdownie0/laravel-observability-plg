@@ -13,10 +13,12 @@ export const columns: ColumnDef<Payment>[] = [
     {
         accessorKey: 'status',
         header: 'Status',
+        enableColumnFilter: true,
     },
     {
         accessorKey: 'email',
         header: 'Email',
+        enableColumnFilter: true,
     },
     {
         accessorKey: 'amount',

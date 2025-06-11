@@ -1,10 +1,30 @@
 <script lang="ts" setup>
 import Button from '@/components/ui/button/Button.vue';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { FlexRender, SortingState, getCoreRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
+import {
+    ColumnFiltersState,
+    FlexRender,
+    SortingState,
+    VisibilityState,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
+    useVueTable,
+} from '@tanstack/vue-table';
 import { ref } from 'vue';
 import { Payment, columns } from './Contacts/Columns';
 
@@ -22,19 +42,35 @@ const data: Payment[] = [
 ];
 
 const sorting = ref<SortingState>([]);
+const filtering = ref<ColumnFiltersState>([]);
+const visibility = ref<VisibilityState>({});
+const searchSelection = ref<string>('email');
 
 const table = useVueTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
         get sorting() {
             return sorting.value;
         },
+        get columnFilters() {
+            return filtering.value;
+        },
+        get columnVisibility() {
+            return visibility.value;
+        },
     },
     onSortingChange: (updater) => {
         sorting.value = typeof updater === 'function' ? updater(sorting.value) : updater;
+    },
+    onColumnFiltersChange: (updater) => {
+        filtering.value = typeof updater === 'function' ? updater(filtering.value) : updater;
+    },
+    onColumnVisibilityChange: (updater) => {
+        visibility.value = typeof updater === 'function' ? updater(visibility.value) : updater;
     },
 });
 </script>
@@ -47,6 +83,60 @@ const table = useVueTable({
             <Button size="lg" class="hover:cursor-pointer"> Add Contact </Button>
         </div>
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div class="flex items-center py-4">
+                <div class="flex items-center">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" class="ml-auto rounded-r-none"> Select </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Filter By</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuRadioGroup
+                                :model-value="searchSelection"
+                                @update:model-value="
+                                    (val) => {
+                                        table.getColumn(searchSelection)?.setFilterValue('');
+                                        searchSelection = val;
+                                    }
+                                "
+                            >
+                                <DropdownMenuRadioItem
+                                    v-for="column in table.getAllColumns().filter((column) => column.id !== 'amount')"
+                                    :key="column.id"
+                                    :value="column.id"
+                                    class="capitalize"
+                                >
+                                    {{ column.id }}
+                                </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Input
+                        :placeholder="`Filter ${searchSelection}...`"
+                        :value="table.getColumn(searchSelection)?.getFilterValue() ?? ''"
+                        @update:model-value="(e) => table.getColumn(searchSelection)?.setFilterValue((e as string).trim())"
+                        class="w-full max-w-sm rounded-l-none"
+                    />
+                </div>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" class="ml-auto"> Columns </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuCheckboxItem
+                            v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
+                            :key="column.id"
+                            class="capitalize"
+                            :model-value="column.getIsVisible()"
+                            @update:model-value="(value: boolean | undefined) => column.toggleVisibility(!!value)"
+                        >
+                            {{ column.id }}
+                        </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
                 <div className="rounded-md border">
                     <Table>
